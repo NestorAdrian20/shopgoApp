@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shopgo/config/routes/app_route.gr.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:intl/intl.dart';
+///import 'package:syncfusion_flutter_charts/charts.dart';
+//import 'package:intl/intl.dart';
 
-import '../widgets/drawer_screen.dart';
+//import '../widgets/drawer_screen.dart';
 
 @RoutePage()
 class HomeBikerScreen extends StatefulWidget {
@@ -46,6 +46,7 @@ class _HomeBikerScreenState extends State<HomeBikerScreen> {
             },
           ),
           const SizedBox(height: 40,),
+          
           /*SafeArea(
         child: Scaffold(
       body: SfCartesianChart(
