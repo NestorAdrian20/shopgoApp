@@ -7,10 +7,11 @@ final _auth = FirebaseAuth.instance;
 
 postDetailsToFirestore(String email, String rool, String plan,
     String emailController, BuildContext context) async {
+    String estado = "Activo";
   var user = _auth.currentUser;
   CollectionReference ref = FirebaseFirestore.instance.collection('users');
 
   ref
       .doc(user!.uid)
-      .set({'email': emailController, 'rool': rool, 'plan': plan});
+      .set({'email': emailController, 'rool': rool, 'plan': plan, 'estado': estado});
 }

@@ -23,14 +23,17 @@ class AppRouter extends $AppRouter {
         AutoRoute(page: Payments.page),
         AutoRoute(page: MapsGeolocator.page),
         AutoRoute(page: OrderTrackingRoute.page),
-        AutoRoute(page: PedidosCustomerRoute.page),
+        AutoRoute(page: PedidosCustomerRouteEnProceso.page),
+        AutoRoute(page: PedidosCustomerRouteEnviados.page),
+        AutoRoute(page: PedidosCustomerRouteFinalizados.page),
         AutoRoute(page: CardServicesCustomer.page),
         AutoRoute(page: HomeBikerRouteServices.page),
         AutoRoute(page: CardServicesEPBiker.page),
         AutoRoute(page: OrderTrackingRoute.page),
         AutoRoute(page: OrderTrackingRouteCopy.page),
         AutoRoute(page: OrderTrackingRouteCopy.page),
-        AutoRoute(page: CardServicesFinalizadoBiker.page)
+        AutoRoute(page: CardServicesFinalizadoBiker.page),
+        AutoRoute(page: SearchGoogleMaps.page)
         //1
         //1CardServicesFinalizadoBiker
       ];

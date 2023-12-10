@@ -9,6 +9,7 @@ import '../components/categoria_servicios_card.dart';
 import '../components/populars_services_card.dart';
 import '../widgets/app_bar_screen.dart';
 
+
 @RoutePage()
 class HomeCustomerScreen extends StatelessWidget {
   const HomeCustomerScreen({super.key});
@@ -16,7 +17,6 @@ class HomeCustomerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       backgroundColor: kBackgroundColor,
       body: SafeArea(
         bottom: false,
@@ -34,7 +34,55 @@ class HomeCustomerScreen extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 30),
                 child: Text(
-                  'Categorias - Usuario',
+                  'Pedidos',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: kTitleTextColor,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 50),
+                child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: <Widget>[
+          const SizedBox(
+            width: 10,
+          ),
+          IconButton(tooltip: 'Enviados',onPressed: (){
+            AutoRouter.of(context).push(const PedidosCustomerRouteEnviados());
+          }, icon: Icon(Icons.send_and_archive)),
+          const SizedBox(
+            width: 30,
+          ),
+          IconButton(tooltip: 'En proceso',onPressed: (){
+            AutoRouter.of(context).push(const PedidosCustomerRouteEnProceso());
+          }, icon: Icon(Icons.pending_outlined)),
+          const SizedBox(
+            width: 30,
+          ),
+          IconButton(tooltip: 'Historial',onPressed: (){
+            AutoRouter.of(context).push(const PedidosCustomerRouteFinalizados());
+          }, icon: Icon(Icons.history)),
+          const SizedBox(
+            width: 30,
+          ),
+        ],
+      ),
+    ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 30),
+                child: Text(
+                  'Categorias',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: kTitleTextColor,
@@ -52,7 +100,7 @@ class HomeCustomerScreen extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 30),
                 child: Text(
-                  'Servicios Populares - Usuario',
+                  'Servicios Populares',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: kTitleTextColor,
@@ -72,43 +120,35 @@ class HomeCustomerScreen extends StatelessWidget {
   }
 
   buildServicesList(BuildContext context) {
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: <Widget>[
-          const SizedBox(
+          SizedBox(
             width: 30,
           ),
-          TextButton(
-              onPressed: () {
-                AutoRouter.of(context).push(const PedidosCustomerRoute());
-              },
-              child: const Text('Ver estado del pedido')),
-          const SizedBox(
-            width: 30,
-          ),
-          const CategoriaServiciosCard(
+          CategoriaServiciosCard(
             'Personalizar',
             'assets/icons/personalizar.png',
             greenColor,
           ),
-          const SizedBox(
+          SizedBox(
             width: 10,
           ),
-          const CategoriaServiciosCard(
+          CategoriaServiciosCard(
             'Entregas\nServicios',
             'assets/icons/package.png',
             greenColor,
           ),
-          const SizedBox(
+          SizedBox(
             width: 10,
           ),
-          const CategoriaServiciosCard(
+          CategoriaServiciosCard(
             'Pagos\nServicios',
             'assets/icons/payments.png',
             greenColor,
           ),
-          const SizedBox(
+          SizedBox(
             width: 30,
           ),
         ],

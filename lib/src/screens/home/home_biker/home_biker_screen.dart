@@ -1,11 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shopgo/config/routes/app_route.gr.dart';
 import 'package:auto_route/auto_route.dart';
-///import 'package:syncfusion_flutter_charts/charts.dart';
-//import 'package:intl/intl.dart';
 
-//import '../widgets/drawer_screen.dart';
+import '../../../services/firebase/firestore/firestore_service.dart';
 
 @RoutePage()
 class HomeBikerScreen extends StatefulWidget {
@@ -18,131 +17,500 @@ class HomeBikerScreen extends StatefulWidget {
 }
 
 class _HomeBikerScreenState extends State<HomeBikerScreen> {
-  //late List<GDPData> _chartData;
-  //late TooltipBehavior _tooltipBehavior;
-
-  @override
-  /*void initState() {
-    _chartData = getChartData();
-    _tooltipBehavior = TooltipBehavior(enable: true);
-    super.initState();
-  }*/
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      //drawer: const DrawerApp(),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: null,
-        title: const Text('ShopGo'),
-        actions: <Widget>[
-          IconButton(
+    return DefaultTabController(
+      initialIndex: 1,
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Shopgo'),
+          automaticallyImplyLeading: false,
+          actions: <Widget>[
+            IconButton(
             icon: SvgPicture.asset('assets/icons/profile.svg'),
             tooltip: 'Profile',
             onPressed: () async {
               await AutoRouter.of(context).push(const ProfileRoute());
             },
           ),
-          const SizedBox(height: 40,),
-          
-          /*SafeArea(
-        child: Scaffold(
-      body: SfCartesianChart(
-        title: ChartTitle(text: 'Continent wise GDP - 2021'),
-        legend: const Legend(isVisible: true),
-        tooltipBehavior: _tooltipBehavior,
-        series: <ChartSeries>[
-          BarSeries<GDPData, String>(
-              name: 'GDP',
-              dataSource: _chartData,
-              xValueMapper: (GDPData gdp, _) => gdp.continent,
-              yValueMapper: (GDPData gdp, _) => gdp.gdp,
-              dataLabelSettings: const DataLabelSettings(isVisible: true),
-              enableTooltip: true)
-        ],
-        primaryXAxis: CategoryAxis(),
-        primaryYAxis: NumericAxis(
-            edgeLabelPlacement: EdgeLabelPlacement.shift,
-            numberFormat: NumberFormat.simpleCurrency(decimalDigits: 0),
-            title: AxisTitle(text: 'GDP in billions of U.S. Dollars')),
-      ),
-    ),),*/
-
-        ],
-      ),
-      body: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  mainAxisSize: MainAxisSize.min,
-  children: <Widget>[
-    const SizedBox(height: 30,),
-        Row(
-        children: <Widget>[
-        Expanded(
-          child: TextButton(
-            style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(10.0),
-                    textStyle: const TextStyle(fontSize: 15),
-                    backgroundColor: Colors.green
-                  ),
-            onPressed: () async{
-              await AutoRouter.of(context).push(const HomeBikerRouteServices());
-            },
-              child: const Text('Sin pedir')
-            )
+          ],
+          bottom: const TabBar(
+            tabs: <Widget>[
+              Tab(
+                icon: Icon(Icons.moped_sharp),
+              ),
+              Tab(
+                icon: Icon(Icons.pending_actions),
+              ),
+              Tab(
+                icon: Icon(Icons.task_alt),
+              ),
+            ],
           ),
-        Expanded(
-          child: TextButton(
-            style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(10.0),
-                    textStyle: const TextStyle(fontSize: 15),
-                    backgroundColor: Colors.green
-                  ),
-            onPressed: () async{
-              await AutoRouter.of(context).push(const CardServicesEPBiker());
-            },
-              child: const Text('Por realizar')
-            ),
         ),
-        Expanded(
-          child: TextButton(
-            style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(10.0),
-                    textStyle: const TextStyle(fontSize: 15),
-                    backgroundColor: Colors.green
-                  ),
-            onPressed: () async{
-              await AutoRouter.of(context).push(const CardServicesFinalizadoBiker());
-            },
-              child: const Text('Realizados')
+        body: TabBarView(
+          children: <Widget>[
+            Center(
+              child: servicesListPendiente(),
             ),
+            Center(
+              child: servicesListEnProceso(),
+            ),
+            Center(
+              child: servicesListFinalizados(),
+            ),
+          ],
         ),
-      const SizedBox(height: 30,)
-      ],
-    ),
-  ],
-),
+      ),
+    );
+    
+  }
+  
+ /// ************************************************************************//
+ /// Servicios finalizados
+
+  FutureBuilder<List<dynamic>> servicesListFinalizados() {
+    String idUser = (FirebaseAuth.instance.currentUser?.uid).toString();
+
+    return FutureBuilder(
+        future: getServicesUser(idUser),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, index) {
+                return Dismissible(
+                  onDismissed: (direction) async {
+                    snapshot.data?.removeAt(index);
+                  },
+                  confirmDismiss: (direction) async {
+                    bool result = false;
+                    result = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text(
+                                '¿Estas seguro de querer eliminar a ${snapshot.data?[index]["category"]}?'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, false);
+                                  },
+                                  child: const Text(
+                                    'Cancelar',
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, true);
+                                  },
+                                  child: const Text('Si, estoy seguro'))
+                            ],
+                          );
+                        });
+                    return result;
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: const Icon(Icons.delete),
+                  ),
+                  direction: DismissDirection.startToEnd,
+                  key: Key(snapshot.data?[index]['uid']),
+                  child: Card(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        //if (snapshot.data?[index]['idBiker'] == "tOpFlvKyXed9Fe56ljx0REz5gY92") ...[
+                        if (snapshot.data?[index]['state'] == "Finalizado" ) ...[
+                          ListTile(
+                            leading: IconButton(
+                                onPressed: () {
+                                  AutoRouter.of(context)
+                                      .push(const OrderTrackingRoute());
+                                },
+                                icon: const Icon(Icons.location_on)),
+                            title:
+                                Text('${snapshot.data?[index]['category']}:'),
+                            subtitle: Text(
+                                'Estado : ${snapshot.data?[index]['state']} \n Tipo: ${snapshot.data?[index]['type']} \n Descripción: ${snapshot.data?[index]['descripction']} \n Dirección de recibo: ${snapshot.data?[index]['addressReceive']} \n Dirección de entrega: ${snapshot.data?[index]['addressDeliver']}'),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              //******************* */
+                              if (snapshot.data?[index]['state'] ==
+                                  "Pendiente") ...[
+                                TextButton(
+                                  child: const Text('Realizar'),
+                                  onPressed: () {
+                                    String uid = (snapshot.data?[index]['uid'])
+                                        .toString();
+                                    _showMyDialogConfirmFinalizado(uid);
+                                  },
+                                ),
+                              ] else ...[
+                                const Icon(
+                                  Icons.check_box,
+                                  size: 40,
+                                  color: Colors.black,
+                                )
+                              ],
+                              //******************************** */
+                              const SizedBox(width: 8),
+                            ],
+                          ),
+                        ] else
+                          ...[],
+                        //] else...[],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
+  }
+
+  Future<void> _showMyDialogConfirmFinalizado(String uid) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Importante'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Al aceptar el servicio, daras acceso a tu ubicación mientras el pedido este en proceso.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Aceptar'),
+              onPressed: () {
+                String idBiker =
+                    (FirebaseAuth.instance.currentUser?.uid).toString();
+                updateServicios(uid, idBiker);
+
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
-  /*List<GDPData> getChartData() {
-    final List<GDPData> chartData = [
-      GDPData('Oceania', 1600),
-      GDPData('Africa', 2490),
-      GDPData('S America', 2900),
-      GDPData('Europe', 23050),
-      GDPData('N America', 24880),
-      GDPData('Asia', 34390),
-    ];
-    return chartData;
-  }*/
+
+ /// ************************************************************************//
+ /// Servicios en proceso
+  FutureBuilder<List<dynamic>> servicesListEnProceso() {
+    String idUser = (FirebaseAuth.instance.currentUser?.uid).toString();
+
+    return FutureBuilder(
+        future: getServicesUser(idUser),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, index) {
+                return Dismissible(
+                  onDismissed: (direction) async {
+                    //await deletePeople(snapshot.data?[index]['uid']);
+                    snapshot.data?.removeAt(index);
+                  },
+                  confirmDismiss: (direction) async {
+                    bool result = false;
+                    result = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text(
+                                '¿Estas seguro de querer eliminar a ${snapshot.data?[index]["category"]}?'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, false);
+                                  },
+                                  child: const Text(
+                                    'Cancelar',
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, true);
+                                  },
+                                  child: const Text('Si, estoy seguro'))
+                            ],
+                          );
+                        });
+                    return result;
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: const Icon(Icons.delete),
+                  ),
+                  direction: DismissDirection.startToEnd,
+                  key: Key(snapshot.data?[index]['uid']),
+                  child: Card(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        //if (snapshot.data?[index]['idBiker'] == "tOpFlvKyXed9Fe56ljx0REz5gY92") ...[
+                        if (snapshot.data?[index]['state'] == "En proceso" ) ...[
+                          ListTile(
+                            leading: IconButton(
+                                onPressed: () {
+                                  AutoRouter.of(context)
+                                      .push(const OrderTrackingRoute());
+                                },
+                                icon: const Icon(Icons.location_on)),
+                            title:
+                                Text('${snapshot.data?[index]['category']}:'),
+                            subtitle: Text(
+                                'Estado : ${snapshot.data?[index]['state']} \n Tipo: ${snapshot.data?[index]['type']} \n Descripción: ${snapshot.data?[index]['descripction']} \n Dirección de recibo: ${snapshot.data?[index]['addressReceive']} \n Dirección de entrega: ${snapshot.data?[index]['addressDeliver']}'),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              //******************* */
+                              if (snapshot.data?[index]['state'] ==
+                                  "Pendiente") ...[
+                                TextButton(
+                                  child: const Text('Realizar'),
+                                  onPressed: () {
+                                    String uid = (snapshot.data?[index]['uid'])
+                                        .toString();
+                                    _showMyDialogConfirmEnProceso(uid);
+                                  },
+                                ),
+                              ] else ...[
+                                const Icon(
+                                  Icons.pending_outlined,
+                                  size: 40,
+                                  color: Colors.black,
+                                )
+                              ],
+                              //******************************** */
+                              const SizedBox(width: 8),
+                            ],
+                          ),
+                        ] else
+                          ...[],
+                        //] else...[],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
+  }
+
+  Future<void> _showMyDialogConfirmEnProceso(String uid) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Importante'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Al aceptar el servicio, daras acceso a tu ubicación mientras el pedido este en proceso.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Aceptar'),
+              onPressed: () {
+                String idBiker =
+                    (FirebaseAuth.instance.currentUser?.uid).toString();
+                updateServicios(uid, idBiker);
+
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+ /// ************************************************************************//
+ /// Servicios pendientes
+ 
+  FutureBuilder<List<dynamic>> servicesListPendiente() {
+    return FutureBuilder(
+        future: getServices(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data?.length,
+              itemBuilder: (context, index) {
+                return Dismissible(
+                  onDismissed: (direction) async {
+                    //await deletePeople(snapshot.data?[index]['uid']);
+                    snapshot.data?.removeAt(index);
+                  },
+                  confirmDismiss: (direction) async {
+                    bool result = false;
+                    result = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text(
+                                '¿Estas seguro de querer eliminar a ${snapshot.data?[index]["category"]}?'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, false);
+                                  },
+                                  child: const Text(
+                                    'Cancelar',
+                                    style: TextStyle(color: Colors.red),
+                                  )),
+                              TextButton(
+                                  onPressed: () {
+                                    return Navigator.pop(context, true);
+                                  },
+                                  child: const Text('Si, estoy seguro'))
+                            ],
+                          );
+                        });
+                    return result;
+                  },
+                  background: Container(
+                    color: Colors.red,
+                    child: const Icon(Icons.delete),
+                  ),
+                  direction: DismissDirection.startToEnd,
+                  key: Key(snapshot.data?[index]['uid']),
+                  child: Card(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (snapshot.data?[index]['state'] == "Pendiente") ...[
+                          ListTile(
+                            leading: const Icon(Icons.album),
+                            title:
+                                Text('${snapshot.data?[index]['category']}:'),
+                            subtitle: Text(
+                                'Estado : ${snapshot.data?[index]['state']} \n Tipo: ${snapshot.data?[index]['type']} \n Descripción: ${snapshot.data?[index]['descripction']} \n Dirección de recibo: ${snapshot.data?[index]['addressReceive']} \n Dirección de entrega: ${snapshot.data?[index]['addressDeliver']}'),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              //******************* */
+                              if (snapshot.data?[index]['state'] ==
+                                  "Pendiente") ...[
+                                TextButton(
+                                  child: const Text('Realizar'),
+                                  onPressed: () {
+                                    String uid = (snapshot.data?[index]['uid'])
+                                        .toString();
+                                    _showMyDialogConfirmPendiente(uid);
+                                  },
+                                ),
+                              ] else ...[
+                                const Icon(
+                                  Icons.moped_sharp,
+                                  size: 40,
+                                  color: Colors.black,
+                                )
+                              ],
+                              //******************************** */
+                              const SizedBox(width: 8),
+                            ],
+                          ),
+                        ] else
+                          ...[],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
+        
+
+        /// ***************** ///
 }
-/*
-class GDPData {
-  GDPData(this.continent, this.gdp);
-  final String continent;
-  final double gdp;
-}*/
+
+
+
+Future<void> _showMyDialogConfirmPendiente(String uid) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Importante'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                    'Al aceptar el servicio, daras acceso a tu ubicación mientras el pedido este en proceso.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Aceptar'),
+              onPressed: () {
+                String idBiker =
+                    (FirebaseAuth.instance.currentUser?.uid).toString();
+                updateServicios(uid, idBiker);
+
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

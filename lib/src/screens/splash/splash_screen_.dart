@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
       const Duration(
           seconds: 3), // Cambia el tiempo de duración según tus necesidades
       () => AutoRouter.of(context)
-          .push(const LoginRoute()), //HomeCustomerRoute())
+          .push(const LoginRoute())//SearchGoogleMaps())//LoginRoute()), //HomeCustomerRoute())
     );
   }
 

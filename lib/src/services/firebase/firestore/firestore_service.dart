@@ -133,6 +133,7 @@ Future<List> getServicesUser(String idUser) async {
       "addressDeliver": data['addressDeliver'],
       "dateRequest": data['dateRequest'],
       "state": data['state'],
+      "idCustomer": data['idCustomer'],
     };
     service.add(services);
   }

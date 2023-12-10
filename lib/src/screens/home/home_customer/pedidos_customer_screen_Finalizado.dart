@@ -9,16 +9,16 @@ import 'package:auto_route/auto_route.dart';
 import '../widgets/drawer_screen.dart';
 
 @RoutePage()
-class PedidosCustomerScreen extends StatefulWidget {
-  const PedidosCustomerScreen({
+class PedidosCustomerScreenFinalizados extends StatefulWidget {
+  const PedidosCustomerScreenFinalizados({
     super.key,
   });
 
   @override
-  State<PedidosCustomerScreen> createState() => _PedidosCustomerScreenState();
+  State<PedidosCustomerScreenFinalizados> createState() => _PedidosCustomerScreenState();
 }
 
-class _PedidosCustomerScreenState extends State<PedidosCustomerScreen> {
+class _PedidosCustomerScreenState extends State<PedidosCustomerScreenFinalizados> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +28,7 @@ class _PedidosCustomerScreenState extends State<PedidosCustomerScreen> {
         backgroundColor: Colors.transparent,
         leading: null,
         title: const Text('ShopGo'),
+        automaticallyImplyLeading: false,
         actions: <Widget>[
           IconButton(
             icon: SvgPicture.asset('assets/icons/profile.svg'),
@@ -93,7 +94,7 @@ class _PedidosCustomerScreenState extends State<PedidosCustomerScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        if (snapshot.data?[index]['state'] == "En proceso") ...[
+                        if (snapshot.data?[index]['state'] == "Finalizado") ...[
                           ListTile(
                             leading: IconButton(
                               onPressed: () {
@@ -123,21 +124,10 @@ class _PedidosCustomerScreenState extends State<PedidosCustomerScreen> {
                                 ),
                               ] else ...[
                                 const Icon(
-                                  Icons.moped_sharp,
+                                  Icons.task_alt,
                                   size: 40,
                                   color: Colors.black,
                                 ),
-                                IconButton(onPressed: (){
-                                String uid = (snapshot.data?[index]['uid'])
-                                        .toString();
-                                //String idBiker =
-                    //(FirebaseAuth.instance.currentUser?.uid).toString();
-                updateServiciosCheckFinish(uid);
-
-                setState(() {});
-                //Navigator.of(context).pop();
-                                
-                              }, icon: const Icon(Icons.check_box_outline_blank)),
                               ],
                               //******************************** */
                               const SizedBox(width: 8),

@@ -12,6 +12,7 @@ class AppBarShopGo extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: const Text('ShopGo'),
+      automaticallyImplyLeading: false,
       actions: <Widget>[
         IconButton(
           icon: SvgPicture.asset('assets/icons/profile.svg'),

@@ -39,6 +39,8 @@ class _DetailPolularsScreenState extends State<DetailPolularsScreen> {
   var _currentItemSelected = "Recibir";
   var type = "Recibir";
 
+  bool showEmptyFieldsAlert = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +168,8 @@ class _DetailPolularsScreenState extends State<DetailPolularsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+
+                        const SizedBox(height: 20,),
                           const Text(
                             "Tipo : ",
                             style: TextStyle(
@@ -188,7 +192,7 @@ class _DetailPolularsScreenState extends State<DetailPolularsScreen> {
                                   dropDownStringItem,
                                   style: const TextStyle(
                                     color:
-                                        const Color.fromARGB(255, 28, 75, 30),
+                                        Color.fromARGB(255, 28, 75, 30),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
                                   ),
@@ -205,12 +209,156 @@ class _DetailPolularsScreenState extends State<DetailPolularsScreen> {
                           ),
                         ],
                       ),
-                      IconButton(
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: const RadialGradient(
+                        center: Alignment(-0.5, -0.6),
+                        radius: 0.15,
+                        colors: <Color>[
+                          Color.fromARGB(255, 255, 255, 255),
+                          Color.fromARGB(255, 255, 255, 255),
+                        ],
+                        stops: <double>[0.9, 1.0],
+                      ),
+                    ),
+                    child: Row(
+                      textDirection: TextDirection.rtl,
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            children: <Widget>[
+                              
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              TextFormField(
+                                controller: descripctionController,
+                                decoration: const InputDecoration(
+                                  icon: Icon(Icons.person),
+                                  hintText: 'Escriba una breve descripción',
+                                  labelText: 'Descripción',
+                                ),
+                                onSaved: (String? value) {
+                                  // This optional block of code can be used to run
+                                  // code when the user saves the form.
+                                },
+                                validator: (String? value) {
+                                  return (value != null && value.contains('@'))
+                                      ? 'Do not use the @ char.'
+                                      : null;
+                                },
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              TextFormField(
+                                controller: direccionReciboController,
+                                decoration: const InputDecoration(
+                                  icon: Icon(Icons.local_taxi_rounded),
+                                  hintText: 'Ingrese la dirección',
+                                  labelText: 'Dirección para recibir',
+                                ),
+                                onSaved: (String? value) {
+                                  // This optional block of code can be used to run
+                                  // code when the user saves the form.
+                                },
+                                validator: (String? value) {
+                                  return (value != null && value.contains('@'))
+                                      ? 'Do not use the @ char.'
+                                      : null;
+                                },
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              TextFormField(
+                                controller: direccionEntregaController,
+                                decoration: const InputDecoration(
+                                  icon: Icon(Icons.map),
+                                  hintText: 'Ingrese la dirección para entregar',
+                                  labelText: 'Dirección de entrega',
+                                ),
+                                onSaved: (String? value) {
+                                  // This optional block of code can be used to run
+                                  // code when the user saves the form.
+                                },
+                                validator: (String? value) {
+                                  return (value != null && value.contains('@'))
+                                      ? 'Do not use the @ char.'
+                                      : null;
+                                },
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              // Alerta para campos vacíos
+                              if (showEmptyFieldsAlert)
+                                const Text(
+                                  'Todos los campos son obligatorios',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                      
+                      /*IconButton(
                         onPressed: () async {
                           await _showMyDialog();
                         },
                         icon: const Icon(Icons.add),
+                      ),*/
+                      const SizedBox(
+                        height: 20,
                       ),
+                      TextButton(
+                child: const Text('Enviar'),
+                onPressed: () {
+                  // Validar si hay campos vacíos antes de procesar el envío
+                  if (descripctionController.text.isEmpty ||
+                      direccionReciboController.text.isEmpty ||
+                      direccionEntregaController.text.isEmpty) {
+                    // Mostrar el mensaje de alerta
+                    setState(() {
+                      showEmptyFieldsAlert = true;
+                    });
+                    return; // No procesar el envío si hay campos vacíos
+                  }
+
+                  // Procesar el envío
+                  String idCustomer =
+                      (FirebaseAuth.instance.currentUser?.uid).toString();
+
+                  addServicios(
+                    widget.category,
+                    idCustomer,
+                    type,
+                    descripctionController.text,
+                    direccionReciboController.text,
+                    direccionEntregaController.text,
+                  );
+                  determinePosition().then((value) {
+                    double lat = value.latitude;
+                    double long = value.longitude;
+                    locationUsersPedidos(idCustomer, lat, long);
+                  });
+                  Navigator.of(context).pop();
+
+                  _showMyDialogConfirm();
+                },
+              ),
                       const SizedBox(
                         height: 20,
                       ),
@@ -222,147 +370,6 @@ class _DetailPolularsScreenState extends State<DetailPolularsScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showMyDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Pedido'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: const RadialGradient(
-                      center: Alignment(-0.5, -0.6),
-                      radius: 0.15,
-                      colors: <Color>[
-                        Color.fromARGB(255, 255, 255, 255),
-                        Color.fromARGB(255, 255, 255, 255),
-                      ],
-                      stops: <double>[0.9, 1.0],
-                    ),
-                  ),
-                  child: Row(
-                    textDirection: TextDirection.rtl,
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          children: <Widget>[
-                            const Text('Recibir'),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: descripctionController,
-                              decoration: const InputDecoration(
-                                icon: Icon(Icons.person),
-                                hintText: 'Escriba una brebe descripción',
-                                labelText: 'Descripción',
-                              ),
-                              onSaved: (String? value) {
-                                // This optional block of code can be used to run
-                                // code when the user saves the form.
-                              },
-                              validator: (String? value) {
-                                return (value != null && value.contains('@'))
-                                    ? 'Do not use the @ char.'
-                                    : null;
-                              },
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: direccionReciboController,
-                              decoration: const InputDecoration(
-                                icon: Icon(Icons.person),
-                                hintText: 'Ingrese la dirección',
-                                labelText: 'Dirección de recibo',
-                              ),
-                              onSaved: (String? value) {
-                                // This optional block of code can be used to run
-                                // code when the user saves the form.
-                              },
-                              validator: (String? value) {
-                                return (value != null && value.contains('@'))
-                                    ? 'Do not use the @ char.'
-                                    : null;
-                              },
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            TextFormField(
-                              controller: direccionEntregaController,
-                              decoration: const InputDecoration(
-                                icon: Icon(Icons.person),
-                                hintText: 'Ingrese la dirección de entrega',
-                                labelText: 'Dirección de entrega',
-                              ),
-                              onSaved: (String? value) {
-                                // This optional block of code can be used to run
-                                // code when the user saves the form.
-                              },
-                              validator: (String? value) {
-                                return (value != null && value.contains('@'))
-                                    ? 'Do not use the @ char.'
-                                    : null;
-                              },
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Aprovar'),
-              onPressed: () {
-                String idCustomer =
-                    (FirebaseAuth.instance.currentUser?.uid).toString();
-
-                addServicios(
-                    widget.category,
-                    idCustomer,
-                    type,
-                    descripctionController.text,
-                    direccionReciboController.text,
-                    direccionEntregaController.text);
-                determinePosition().then((value) {
-                  double lat = value.latitude;
-                  double long = value.longitude;
-                  locationUsersPedidos(idCustomer, lat, long);
-                });
-                Navigator.of(context).pop();
-
-                _showMyDialogConfirm();
-              },
-            ),
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 

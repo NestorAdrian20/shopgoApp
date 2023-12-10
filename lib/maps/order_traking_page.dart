@@ -107,6 +107,10 @@ class OrderTrackingPageState extends State<OrderTrackingPage> {
     super.initState();
   }
 
+@override
+void dispose() {
+  super.dispose();
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

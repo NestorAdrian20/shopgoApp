@@ -325,7 +325,8 @@ class _LoginPageState extends State<LoginPage> {
         .doc(user!.uid)
         .get()
         .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
+      if (documentSnapshot.exists && documentSnapshot.get('estado') != "Bloqueado"
+      ) {
         if (documentSnapshot.get('rool') == "Motorista") {
           AutoRouter.of(context).push(const HomeBikerRoute());
         } else {
